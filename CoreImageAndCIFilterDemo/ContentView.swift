@@ -7,28 +7,6 @@
 
 import SwiftUI
 
-//struct ContentView: View {
-//    var body: some View {
-//        VStack {
-//            GeometryReader { geo in
-//                Image("apple")
-//                    .resizable()
-//                    .scaledToFit()
-//                    .position(x: geo.size.width/2, y: geo.size.height/2)
-//            }
-//           // .padding()
-//            .frame(width: UIScreen.main.bounds.width * 1.0, height: UIScreen.main.bounds.height * 0.8)
-//            .background(.green)
-//            .aspectRatio(contentMode: .fill)
-//
-//            Button("Tester"){
-//                print("Tester")
-//            }.padding()
-//            Spacer()
-//        }
-//    }
-//}
-
 struct ContentView: View {
     @State private var value1: Double = 0
     @State private var value2: Double = 0
