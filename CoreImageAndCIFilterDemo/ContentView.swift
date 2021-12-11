@@ -5,82 +5,6 @@
 //  Created by Creatcher on 10.12.21.
 //
 
-//import SwiftUI
-//
-//struct ContentView: View {
-//    @State private var value1: Double = 0
-//    @State private var value2: Double = 0
-//    @State private var value3: Double = 0
-//
-//    var body: some View {
-//        GeometryReader { geo in
-//            VStack(alignment: .leading, spacing: 0) {
-//            VStack {
-//                Image("apple")
-//                    .resizable()
-//                    .scaledToFit()
-//                    .cornerRadius(10)
-//                    .padding()
-//                    .frame(width: geo.size.width * 1.0, height: (geo.size.height-400) * 1.0)
-//                    .background(.black)
-//
-//                HStack {
-//                    Spacer()
-//                    Spacer()
-//                    Button("Set Filter"){
-//                        print("Set Filter")
-//                    }
-//                        .padding()
-//                        .background(Color(UIColor.darkGray))
-//                        .foregroundStyle(.black)
-//                        .cornerRadius(10)
-//                    Spacer()
-//                    Button("Load Image"){
-//                        print("Load Image")
-//                    }
-//                        .padding()
-//                        .background(Color(UIColor.darkGray))
-//                        .foregroundStyle(.black)
-//                        .cornerRadius(10)
-//                    Spacer()
-//                    Button("Save Image"){
-//                        print("Save Image")
-//                    }
-//                        .padding()
-//                        .background(Color(UIColor.darkGray))
-//                        .foregroundStyle(.black)
-//                        .cornerRadius(10)
-//                    Spacer()
-//                    Spacer()
-//                }
-//                .padding()
-//                Spacer()
-//            }
-//                VStack(alignment: .leading, spacing: 5) {
-//                    Text("Filter: Name").font(.headline).padding()
-//                    Text("Value 1: \(value1, specifier: "%.1f")").font(.footnote)
-//                    Slider(value: $value1, in: 0...100)
-//                    Text("Value 2: \(value2, specifier: "%.1f")").font(.footnote)
-//                    Slider(value: $value2, in: 0...100)
-//                    Text("Value 3: \(value3, specifier: "%.1f")").font(.footnote)
-//                    Slider(value: $value3, in: 0...100)
-//                    Spacer()
-//                }
-//                    .padding()
-//                    .frame(minWidth: 0, idealWidth: 0, maxWidth: .infinity, minHeight: 200, idealHeight: 200, maxHeight: .infinity, alignment: .center)
-//                    .background(Color(UIColor(red: 0.1, green: 0.1, blue: 0.1, alpha: 1.0)))
-//            }
-//        }
-//    }
-//}
-//
-//struct ContentView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        ContentView()
-//    }
-//}
-
-
 import SwiftUI
 import Combine
 
@@ -124,40 +48,38 @@ class Model: BaseModel, ObservableObject {
 
 class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
     private let ciFilter: CIFilter
+    
     var id: String { name }
     var name: String {
-        ciFilter.name
+        "\(ciFilter.attributes["CIAttributeFilterDisplayName"]!)"
     }
     
-    let sliders: [Slider]
+    var sliders: [Slider]
     
     init(from ciFilter: CIFilter) {
         self.ciFilter = ciFilter
-        let sliderName = "inputIntensity"
-        
-        sliders = [
-//            Slider(
-//                name: sliderName,
-//                value: ciFilter.value(forKey: sliderName) as! CGFloat,
-//                min: 0,
-//                max: 1
-//            ),
-//            Slider(
-//                name: sliderName,
-//                value: ciFilter.value(forKey: sliderName) as! CGFloat,
-//                min: 0,
-//                max: 1
-//            ),
-//            Slider(
-//                name: sliderName,
-//                value: ciFilter.value(forKey: sliderName) as! CGFloat,
-//                min: 0,
-//                max: 1
-//            )
-        ]
+        sliders = []
         
         super.init()
         
+        
+        for attribute in ciFilter.attributes{
+            if attribute.key.hasPrefix("input") &&
+                ((attribute.value as! Dictionary<String,Any>)["CIAttributeClass"] as! String) == "NSNumber"
+            {
+                sliders.append(
+                    Slider(
+                        name: attribute.key.count > 5
+                        ? attribute.key.test()
+                                : attribute.key,
+                        value: ciFilter.value(forKey: attribute.key) as? CGFloat ?? CGFloat(0.0),
+                        min: (attribute.value as! Dictionary<String,Any>)["CIAttributeSliderMin"] as? CGFloat ?? CGFloat(0.0),
+                        max: (attribute.value as! Dictionary<String,Any>)["CIAttributeSliderMax"] as? CGFloat ?? CGFloat(1.0)
+                    )
+                )
+            }
+        }
+
         makeSub()
     }
     
@@ -257,21 +179,24 @@ struct SliderV: View {
         VStack(spacing: 0) {
             ZStack {
                 HStack {
-                    Text("0.0")
+                    Text("\(slider.min, specifier: "%.2f")")
                     
                     Spacer()
                     
-                    Text("1.0")
+                    Text("\(slider.max, specifier: "%.2f")")
                 }
                 
                 HStack {
-                    Text(slider.name + ": ") + Text("\(round(100 * slider.value) / 100)")
+                    Text(slider.name.count > 5
+                         ? String(slider.name.dropFirst(5)).camelCaseToWords() + ": "
+                         : slider.name + ": " ) + Text("\(slider.value, specifier: "%.2f")")
                 }
             }.padding(.horizontal, 5)
             .padding(10)
             
-            Slider(value: $slider.value)
+            Slider(value: $slider.value, in: slider.min...slider.max)
                 .padding(10)
+
         }
         .monospacedDigit()
         .background(Color(level: 2))
@@ -442,5 +367,25 @@ fileprivate extension Color {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+    }
+}
+
+extension String {
+    func camelCaseToWords() -> String {
+        return unicodeScalars.reduce("") {
+            if CharacterSet.uppercaseLetters.contains($1) {
+                return ($0 + " " + String($1))
+            }
+            else {
+                return $0 + String($1)
+            }
+        }
+    }
+    
+    func test() -> String {
+        if self.count > 5 {
+            return String(self.dropFirst(0))
+        }
+        return self
     }
 }
