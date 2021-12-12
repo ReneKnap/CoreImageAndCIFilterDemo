@@ -17,15 +17,21 @@ struct FilterList: View {
             ScrollView {
                 LazyVStack(pinnedViews: [.sectionHeaders]) {
                     Section(header: Headline("ToDo").maxFrame().background(Color(level: 2))){
-                        ForEach(model.filters) { filter in
-                            Button {
-                                model.select(filter: filter)
-                            } label: {
-                                Elememt(
-                                    filter,
-                                    isSelected: filter == model.currentFilter
-                                )
+                        ForEach(model.filters, id: \.self) { filter in
+                            Elememt(
+                                filterName: filter,
+                                isSelected: filter == model.currentFilter.name
+                            ) {
+                                model.selectFilter(name: filter)
                             }
+                        }
+                    }
+                    Section(header: Headline("Face Detection").maxFrame().background(Color(level: 2))){
+                        Elememt(
+                            filterName: "Face Detection",
+                            isSelected: "Face Detection" == model.currentFilter.name
+                        ) {
+                            model.selectFilter(name: "Face Detection")
                         }
                     }
                 }.padding(defaultPadding)
@@ -36,34 +42,42 @@ struct FilterList: View {
 
 extension FilterList {
     struct Elememt: View {
-        @ObservedObject var filter: Filter
+        let filterName: String
         let image: CGImage?
         let isSelected: Bool
         
+        let onPress: ()->()
+        
         var body: some View {
-            HStack {
-                OptionalImage(image: image)
-                    .aspectRatio(1, contentMode: .fill)
-                    .clipped()
-                
-                Text(filter.displayName)
-                    .font(.system(size: 14, weight: .regular, design: .rounded))
-                    .lineLimit(1)
-                
-                Spacer()
+            Button {
+                onPress()
+            } label: {
+                HStack {
+                    OptionalImage(image: image)
+                        .aspectRatio(1, contentMode: .fill)
+                        .clipped()
+                    
+                    Text(filterName)
+                        .font(.system(size: 14, weight: .regular, design: .rounded))
+                        .lineLimit(1)
+                    
+                    Spacer()
+                }
+                .foregroundColor(isSelected ? .black : .white)
+                .padding(.horizontal, defaultPadding)
+                .frame(height: minimumTappableLenght)
+                .background(isSelected ? Color.accentColor : Color(level: 3))
+                .cornerRadius(defaultCornerRasius)
             }
-            .foregroundColor(isSelected ? .black : .white)
-            .padding(.horizontal, defaultPadding)
-            .frame(height: minimumTappableLenght)
-            .background(isSelected ? Color.accentColor : Color(level: 3))
-            .cornerRadius(defaultCornerRasius)
-            
         }
         
-        init(_ filter: Filter, image: CGImage? = nil, isSelected: Bool) {
-            self.filter = filter
+        
+        
+        init(filterName: String, image: CGImage? = nil, isSelected: Bool, onPress: @escaping ()->()) {
+            self.filterName = filterName
             self.image = image
             self.isSelected = isSelected
+            self.onPress = onPress
         }
     }
 }

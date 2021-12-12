@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension FilterEditor {
-    class ViewModel: BaseModel, ObservableObject {
+    class ViewModel: ModelBase, ObservableObject {
         let model = Model()
         @Published var currentFilter: Filter! = nil
         @Published var filteredImage: UIImage? = nil
@@ -75,12 +75,11 @@ struct FilterEditor: View {
 }
 
 struct FilterSettings: View {
-    @ObservedObject
-    var filter: Filter
+    let filter: Filter
     
     var body: some View {
         VStack {
-            Headline("\(filter.displayName)")
+            Headline("\(filter.name)")
             
             ScrollView {
                 VStack {

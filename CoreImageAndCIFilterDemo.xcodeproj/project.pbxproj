@@ -20,6 +20,7 @@
 		F574AB0D2765A21A00D88ECC /* HelperViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB0C2765A21A00D88ECC /* HelperViews.swift */; };
 		F574AB102765A2D600D88ECC /* FilterModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB0F2765A2D600D88ECC /* FilterModel.swift */; };
 		F574AB122765DC8700D88ECC /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB112765DC8700D88ECC /* UIImage+Extensions.swift */; };
+		F574AB1627663BC400D88ECC /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB1527663BC400D88ECC /* Filter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,7 @@
 		F574AB0C2765A21A00D88ECC /* HelperViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelperViews.swift; sourceTree = "<group>"; };
 		F574AB0F2765A2D600D88ECC /* FilterModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterModel.swift; sourceTree = "<group>"; };
 		F574AB112765DC8700D88ECC /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
+		F574AB1527663BC400D88ECC /* Filter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Filter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,6 +116,7 @@
 			isa = PBXGroup;
 			children = (
 				F574AB0F2765A2D600D88ECC /* FilterModel.swift */,
+				F574AB1527663BC400D88ECC /* Filter.swift */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -189,6 +192,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F574AB0D2765A21A00D88ECC /* HelperViews.swift in Sources */,
+				F574AB1627663BC400D88ECC /* Filter.swift in Sources */,
 				F574AAD6276375EA00D88ECC /* ContentView.swift in Sources */,
 				F574AAFD2765979400D88ECC /* String+Extensions.swift in Sources */,
 				F574AAD4276375EA00D88ECC /* CoreImageAndCIFilterDemoApp.swift in Sources */,

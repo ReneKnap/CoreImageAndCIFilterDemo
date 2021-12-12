@@ -8,157 +8,97 @@
 import SwiftUI
 import Combine
 
-class BaseModel {
+class ModelBase {
     var subs = Set<AnyCancellable>()
 }
 
-class Model: BaseModel, ObservableObject {
-    @Published var currentFilter: Filter
-    @Published var filteredImage: UIImage?
-    let filters: [Filter]
-    @Published var selectedImage: UIImage?
+class Model: ModelBase, ObservableObject {
+    private var filterSubs = Set<AnyCancellable>()
     
-    //Initialize the context to be reused
-    private let context = CIContext()
+    @Published var currentFilter: Filter! = nil
+    @Published var filteredImage: UIImage?
+    let filters: [String]
+    @Published var selectedImage: UIImage?
     
     override init() {
         //MARK: - Get built-in Filters
-        filters = CIFilter
-        //String Array of biuld-in filters
-            .filterNames(inCategory: kCICategoryBuiltIn)
-            .compactMap(CIFilter.init)
-            .map(Filter.init)
-        
-        currentFilter = filters.first!
+//        filters = CIFilter
+//        //String Array of biuld-in filters
+//            .filterNames(inCategory: kCICategoryBuiltIn)
+//
+        filters = [
+            "CIBoxBlur",
+            "CIDiscBlur",
+            "CIGaussianBlur",
+            "CIMaskedVariableBlur",
+            "CIBloom",
+            "CIComicEffect",
+            "CIEdges",
+            "CIEdgeWork",
+            "CIPixellate",
+            "CIHexagonalPixellate"
+        ]
         
         super.init()
         
-        $selectedImage
-            .compactMap { $0 }
-            // Create a CIImage to apply the CIFilter
-            .map { CIImage(image: $0) }
-            .sink { [weak self] in
-                guard let self = self else { return }
-                // Pass the image to the filter
-                self.currentFilter.ciFilter.setValue($0, forKey: kCIInputImageKey)
-                self.doApply.send(self.currentFilter.ciFilter)
-            }.store(in: &subs)
+        selectFilter(name: filters.first!)
         
-        doApply
-            .sink(receiveValue: apply(filter:))
-            .store(in: &subs)
+//        $selectedImage
+//            .compactMap { $0 }
+//            // Create a CIImage to apply the CIFilter
+//            .map { CIImage(image: $0) }
+//            .sink { [weak self] in
+//                guard let self = self else { return }
+//                // Pass the image to the filter
+//                self.currentFilter.ciFilter.setValue($0, forKey: kCIInputImageKey)
+//                self.apply(filter: self.currentFilter.ciFilter)
+//            }.store(in: &subs)
         
+        
+//        $currentFilter
+//            .map(\.ciFilter)
+//            .sink(receiveValue: doApply.send)
+//            .store(in: &subs)
+        
+//        for filter in filters {
+//            filter.didChange
+//                .sink(receiveValue: doApply.send)
+//                .store(in: &subs)
+//        }
         $currentFilter
-            .map(\.ciFilter)
-            .sink(receiveValue: doApply.send)
+            .compactMap { $0 }
+            .combineLatest(
+                $selectedImage
+                    .compactMap { $0 }
+            ).map { (filter, image) in
+                filter.set(image: image)
+                return filter
+            }
+            .sink(receiveValue: onSetupChange(filter:))
             .store(in: &subs)
+    }
+    
+    
+    private func onSetupChange(filter: Filter) {
+        filterSubs.removeAll()
+        filter.didChange
+            .sink(receiveValue: apply(filter:))
+            .store(in: &filterSubs)
         
-        for filter in filters {
-            filter.didChange
-                .sink(receiveValue: doApply.send)
-                .store(in: &subs)
-        }
+        apply(filter: filter)
     }
     
     //MARK: - Appy Filte
-    private let doApply = PassthroughSubject<CIFilter, Never>()
-    private func apply(filter: CIFilter) {
-        
-        // Calculate in the context the transformed image with the filter settings
-        guard let outputImage = filter.outputImage else { return }
-        if let cgImage = context.createCGImage(outputImage,
-                                               from: outputImage.extent) {
-            filteredImage = UIImage(cgImage: cgImage)
-        }
+    private func apply(filter: Filter) {
+        filteredImage = filter.apply()
     }
     
-    func select(filter: Filter) {
-        currentFilter = filter
+    func selectFilter(name: String) {
+        if let ciFilter = CIFilter(name: name) {
+            currentFilter = FilterBuildIn(ciFilter)
+        } else {
+            currentFilter = FilterFaceDetection()
+        }
     }
 }
 
-class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
-    let ciFilter: CIFilter
-    let didChange = PassthroughSubject<CIFilter, Never>()
-    
-    var id: String { name }
-    var name: String {
-        "\(ciFilter.name)"
-    }
-    var displayName: String {
-        "\(ciFilter.attributes["CIAttributeFilterDisplayName"]!)"
-    }
-    
-    var sliders: [Slider]
-    
-    init(from ciFilter: CIFilter) {
-        self.ciFilter = ciFilter
-        sliders = []
-        
-        super.init()
-        
-        //MARK: - Slider for
-        // Set a slider for each numeric filter parameter
-        for attribute in ciFilter.attributes{
-            if
-                attribute.key.hasPrefix("input"),
-                ((attribute.value as! Dictionary<String,Any>)["CIAttributeClass"] as! String) == "NSNumber",
-                let hasMin = ((attribute.value as! Dictionary<String,Any>)["CIAttributeSliderMin"] as? String),
-                !hasMin.isEmpty
-                
-            {
-                sliders.append(
-                    Slider(
-                        name: attribute.key,
-                        value: ciFilter.value(forKey: attribute.key) as? CGFloat ?? CGFloat(0.0),
-                        min: (attribute.value as! Dictionary<String,Any>)["CIAttributeSliderMin"] as? CGFloat ?? CGFloat(0.0),
-                        max: (attribute.value as! Dictionary<String,Any>)["CIAttributeSliderMax"] as? CGFloat ?? CGFloat(1.0)
-                    )
-                )
-            }
-        }
-        makeSub()
-        didChange.send(ciFilter)
-    }
-    
-    private func makeSub() {
-        subs.removeAll()
-        
-        for slider in sliders {
-            slider.$value
-                .debounce(for: .seconds(0.01), scheduler: DispatchQueue.main)
-                .sink {
-                    self.adjustFilter(value: $0, sliderName: slider.name)
-                }.store(in: &subs)
-        }
-    }
-    
-    static func == (lhs: Filter, rhs: Filter) -> Bool {
-        lhs.name == rhs.name
-    }
-    
-    func adjustFilter(value: CGFloat, sliderName: String) {
-//        ciFilter.setValuesForKeys(sliders.reduce(
-//            into: [String: CGFloat](), {
-//                $0[$1.name] = $1.value
-//        }))
-        print(sliderName, value)
-        ciFilter.setValue(value, forKey: sliderName)
-        didChange.send(ciFilter)
-    }
-    
-    class Slider: ObservableObject, Identifiable {
-        var id: String { name }
-        var name: String
-        @Published var value: CGFloat
-        var min: CGFloat
-        var max: CGFloat
-        
-        init(name: String, value: CGFloat, min: CGFloat, max: CGFloat) {
-            self.name = name
-            self.value = value
-            self.min = min
-            self.max = max
-        }
-    }
-}
