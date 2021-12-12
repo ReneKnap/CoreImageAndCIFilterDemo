@@ -18,7 +18,7 @@ class Model: BaseModel, ObservableObject {
     @Published var currentFilter: Filter
     @Published var filteredImage: UIImage?
     let filters: [Filter]
-    var selectedImage: UIImage?
+    @Published var selectedImage: UIImage?
     
     //Initialize the context to be reused
     private let context = CIContext()
@@ -35,23 +35,26 @@ class Model: BaseModel, ObservableObject {
         
         super.init()
         
+        doApply
+            .combineLatest($selectedImage.compactMap{$0})
+            .sink(receiveValue: apply(filter:image:))
+            .store(in: &subs)
+        
         $currentFilter
             .map(\.ciFilter)
-            .sink(receiveValue: apply(filter: ))
+            .sink(receiveValue: doApply.send)
             .store(in: &subs)
         
         for filter in filters {
-            filter.didChange.sink { filter in
-                self.apply(filter: filter)
-            }.store(in: &subs)
+            filter.didChange
+                .sink(receiveValue: doApply.send)
+                .store(in: &subs)
         }
     }
     
-    //MARK: - Appy Filter
-    func apply(filter: CIFilter) {
-        // Check if an image has been loaded
-        guard let image = selectedImage else { return }
-        
+    //MARK: - Appy Filte
+    private let doApply = PassthroughSubject<CIFilter, Never>()
+    private func apply(filter: CIFilter, image: UIImage) {
         // Create a CIImage to apply the CIFilter
         let beginImage = CIImage(image: image)
         
@@ -114,9 +117,11 @@ class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
         subs.removeAll()
         
         for slider in sliders {
-            slider.$value.sink { _ in
-                self.adjustFilter()
-            }.store(in: &subs)
+            slider.$value
+                .debounce(for: .seconds(0.01), scheduler: DispatchQueue.main)
+                .sink {
+                    self.adjustFilter(value: $0)
+                }.store(in: &subs)
         }
     }
     
@@ -124,10 +129,10 @@ class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
         lhs.name == rhs.name
     }
     
-    func adjustFilter() {
+    func adjustFilter(value: CGFloat) {
         ciFilter.setValuesForKeys(sliders.reduce(
             into: [String: CGFloat](), {
-            $0[$1.name] = $1.value
+            $0[$1.name] = value
         }))
         
         didChange.send(ciFilter)
