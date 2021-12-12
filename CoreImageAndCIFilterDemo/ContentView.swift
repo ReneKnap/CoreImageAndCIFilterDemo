@@ -13,7 +13,6 @@ class BaseModel {
     var subs = Set<AnyCancellable>()
 }
 
-
 class Model: BaseModel, ObservableObject {
     @Published var currentFilter: Filter
     @Published var isShowPicker: Bool = false
@@ -88,9 +87,7 @@ class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
             {
                 sliders.append(
                     Slider(
-                        name: attribute.key.count > 5
-                        ? attribute.key.test()
-                                : attribute.key,
+                        name: attribute.key,
                         value: ciFilter.value(forKey: attribute.key) as? CGFloat ?? CGFloat(0.0),
                         min: (attribute.value as! Dictionary<String,Any>)["CIAttributeSliderMin"] as? CGFloat ?? CGFloat(0.0),
                         max: (attribute.value as! Dictionary<String,Any>)["CIAttributeSliderMax"] as? CGFloat ?? CGFloat(1.0)
@@ -98,6 +95,7 @@ class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
                 )
             }
         }
+        
 
         makeSub()
     }
@@ -212,9 +210,8 @@ struct SliderV: View {
                 }
                 
                 HStack {
-                    Text(slider.name.count > 5
-                         ? String(slider.name.dropFirst(5)).camelCaseToWords() + ": "
-                         : slider.name + ": " ) + Text("\(slider.value, specifier: "%.2f")")
+                    Text(slider.name.removeFirst(5).camelCaseToWords() + ": ")
+                        + Text("\(slider.value, specifier: "%.2f")")
                 }
             }.padding(.horizontal, 5)
             .padding(10)
@@ -360,19 +357,7 @@ struct ContentView: View {
     }
 }
 
-extension View {
-    func maxFrame() -> some View {
-        self.frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-    
-    func maxWidth() -> some View {
-        self.frame(maxWidth: .infinity)
-    }
-    
-    func maxHeight() -> some View {
-        self.frame(maxHeight: .infinity)
-    }
-}
+
 
 struct Placeholder: View {
     let name: String
@@ -433,16 +418,8 @@ struct ImagePicker: UIViewControllerRepresentable {
                                 context: UIViewControllerRepresentableContext<ImagePicker>) {
 
     }
-
 }
 
-
-fileprivate extension Color {
-    init(level: Int) {
-        let value = 0.1 * Double(level)
-        self.init(uiColor: UIColor.init(white: value, alpha: 1))
-    }
-}
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
@@ -450,25 +427,6 @@ struct ContentView_Previews: PreviewProvider {
     }
 }
 
-extension String {
-    func camelCaseToWords() -> String {
-        return unicodeScalars.reduce("") {
-            if CharacterSet.uppercaseLetters.contains($1) {
-                return ($0 + " " + String($1))
-            }
-            else {
-                return $0 + String($1)
-            }
-        }
-    }
-    
-    func test() -> String {
-        if self.count > 5 {
-            return String(self.dropFirst(0))
-        }
-        return self
-    }
-}
 
 class ImageSaver: NSObject {
     func writeToPhotoAlbum(image: UIImage) {
