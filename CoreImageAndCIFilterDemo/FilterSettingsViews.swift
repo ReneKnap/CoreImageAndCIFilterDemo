@@ -13,7 +13,7 @@ struct FilterEditor: View {
     var body: some View {
         VStack {
             ZStack {
-                Image(uiImage: model.currentImage)
+                Image(uiImage: model.currentImage ?? UIImage(fromColor: UIColor(.gray)))
                     .resizable()
                     .scaledToFit()
                     .cornerRadius(10)

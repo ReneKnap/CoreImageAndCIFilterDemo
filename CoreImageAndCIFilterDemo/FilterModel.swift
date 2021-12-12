@@ -17,8 +17,9 @@ class Model: BaseModel, ObservableObject {
     @Published var isShowPicker: Bool = false
     var filters = [Filter]()
     var selectedImage: UIImage?
-    @Published var currentImage: UIImage
+    @Published var currentImage: UIImage?
     var context: CIContext!
+    @Published var showImageSavedAlert = false
     
     override init() {
         filters = CIFilter
@@ -28,8 +29,6 @@ class Model: BaseModel, ObservableObject {
         
         currentFilter = filters.first!
         
-        selectedImage = UIImage(named: "apple")
-        currentImage = selectedImage!
         context = CIContext()
         
         super.init()
@@ -43,8 +42,11 @@ class Model: BaseModel, ObservableObject {
     }
     
     func apply(filter: CIFilter) {
+        guard let image = selectedImage else {
+            return
+        }
+        let beginImage = CIImage(image: image)
         let tmpFilter = currentFilter.ciFilter
-        let beginImage = CIImage(image: selectedImage!)
         
         tmpFilter.setValue(beginImage, forKey: kCIInputImageKey)
         guard let outputImage = tmpFilter.outputImage else { return }

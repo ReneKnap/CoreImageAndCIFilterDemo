@@ -23,7 +23,16 @@ struct ImageFileNavigation: View {
                 }
                 Button("Save Image") {
                     let imageSaver = ImageSaver()
-                    imageSaver.writeToPhotoAlbum(image: model.currentImage)
+                    guard let targetImage = model.currentImage else {
+                        return
+                    }
+                    imageSaver.writeToPhotoAlbum(image: targetImage)
+                    model.showImageSavedAlert = true
+                }.alert(isPresented: $model.showImageSavedAlert) {
+                    Alert(
+                        title: Text("Saved"),
+                        message: Text("Image is saved to your Album")
+                    )
                 }
                 Button("Detect Face") {
                     print("Detect Face")
