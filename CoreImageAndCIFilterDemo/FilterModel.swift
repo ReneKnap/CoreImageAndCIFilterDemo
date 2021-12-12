@@ -13,8 +13,6 @@ class BaseModel {
 }
 
 class Model: BaseModel, ObservableObject {
-//    @Published var isShowPicker: Bool = false
-//    @Published var showImageSavedAlert = false
     @Published var currentFilter: Filter
     @Published var filteredImage: UIImage?
     let filters: [Filter]
@@ -35,9 +33,19 @@ class Model: BaseModel, ObservableObject {
         
         super.init()
         
+        $selectedImage
+            .compactMap { $0 }
+            // Create a CIImage to apply the CIFilter
+            .map { CIImage(image: $0) }
+            .sink { [weak self] in
+                guard let self = self else { return }
+                // Pass the image to the filter
+                self.currentFilter.ciFilter.setValue($0, forKey: kCIInputImageKey)
+                self.doApply.send(self.currentFilter.ciFilter)
+            }.store(in: &subs)
+        
         doApply
-            .combineLatest($selectedImage.compactMap{$0})
-            .sink(receiveValue: apply(filter:image:))
+            .sink(receiveValue: apply(filter:))
             .store(in: &subs)
         
         $currentFilter
@@ -54,15 +62,10 @@ class Model: BaseModel, ObservableObject {
     
     //MARK: - Appy Filte
     private let doApply = PassthroughSubject<CIFilter, Never>()
-    private func apply(filter: CIFilter, image: UIImage) {
-        // Create a CIImage to apply the CIFilter
-        let beginImage = CIImage(image: image)
-        
-        // Pass the image to the filter
-        currentFilter.ciFilter.setValue(beginImage, forKey: kCIInputImageKey)
+    private func apply(filter: CIFilter) {
         
         // Calculate in the context the transformed image with the filter settings
-        guard let outputImage = currentFilter.ciFilter.outputImage else { return }
+        guard let outputImage = filter.outputImage else { return }
         if let cgImage = context.createCGImage(outputImage,
                                                from: outputImage.extent) {
             filteredImage = UIImage(cgImage: cgImage)
@@ -97,8 +100,12 @@ class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
         //MARK: - Slider for
         // Set a slider for each numeric filter parameter
         for attribute in ciFilter.attributes{
-            if attribute.key.hasPrefix("input") &&
-                ((attribute.value as! Dictionary<String,Any>)["CIAttributeClass"] as! String) == "NSNumber"
+            if
+                attribute.key.hasPrefix("input"),
+                ((attribute.value as! Dictionary<String,Any>)["CIAttributeClass"] as! String) == "NSNumber",
+                let hasMin = ((attribute.value as! Dictionary<String,Any>)["CIAttributeSliderMin"] as? String),
+                !hasMin.isEmpty
+                
             {
                 sliders.append(
                     Slider(
@@ -111,6 +118,7 @@ class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
             }
         }
         makeSub()
+        didChange.send(ciFilter)
     }
     
     private func makeSub() {
@@ -120,7 +128,7 @@ class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
             slider.$value
                 .debounce(for: .seconds(0.01), scheduler: DispatchQueue.main)
                 .sink {
-                    self.adjustFilter(value: $0)
+                    self.adjustFilter(value: $0, sliderName: slider.name)
                 }.store(in: &subs)
         }
     }
@@ -129,12 +137,13 @@ class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
         lhs.name == rhs.name
     }
     
-    func adjustFilter(value: CGFloat) {
-        ciFilter.setValuesForKeys(sliders.reduce(
-            into: [String: CGFloat](), {
-            $0[$1.name] = value
-        }))
-        
+    func adjustFilter(value: CGFloat, sliderName: String) {
+//        ciFilter.setValuesForKeys(sliders.reduce(
+//            into: [String: CGFloat](), {
+//                $0[$1.name] = $1.value
+//        }))
+        print(sliderName, value)
+        ciFilter.setValue(value, forKey: sliderName)
         didChange.send(ciFilter)
     }
     

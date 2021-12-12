@@ -9,9 +9,11 @@ import SwiftUI
 
 extension FilterEditor {
     class ViewModel: BaseModel, ObservableObject {
-        var model = Model()
+        let model = Model()
         @Published var currentFilter: Filter! = nil
         @Published var filteredImage: UIImage? = nil
+        
+        @Published var selectedImage: UIImage? = nil
         
         @Published var isShowPicker: Bool = false
         @Published var showImageSavedAlert = false
@@ -30,6 +32,12 @@ extension FilterEditor {
 //                .assign(to: \.filteredImage, on: self)
                 .sink { [weak self] in
                     self?.filteredImage = $0
+                }
+                .store(in: &subs)
+            
+            $selectedImage
+                .sink { [weak self] image in
+                    self?.model.selectedImage = image
                 }
                 .store(in: &subs)
         }
@@ -61,7 +69,7 @@ struct FilterEditor: View {
                 }.background(Placeholder(""))
             }.frame(height: 350)
         }.sheet(isPresented: $vm.isShowPicker) {
-            ImagePicker(image2: $vm.model.selectedImage)
+            ImagePicker(image2: $vm.selectedImage)
         }.environmentObject(vm)
     }
 }
