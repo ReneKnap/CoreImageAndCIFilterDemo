@@ -16,16 +16,23 @@ class BaseModel {
 
 class Model: BaseModel, ObservableObject {
     @Published var currentFilter: Filter
+    @Published var isShowPicker: Bool = false
     var filters = [Filter]()
+    var selectedImage: UIImage?
+    @Published var currentImage: UIImage
+    var context: CIContext!
     
     override init() {
         filters = CIFilter
             .filterNames(inCategory: kCICategoryBuiltIn)
             .compactMap(CIFilter.init)
             .map(Filter.init)
-//        filters = [Filter(from: CIFilter(name: "CISepiaTone")!)]
         
         currentFilter = filters.first!
+        
+        selectedImage = UIImage(named: "apple")
+        currentImage = selectedImage!
+        context = CIContext()
         
         super.init()
         
@@ -38,7 +45,16 @@ class Model: BaseModel, ObservableObject {
     }
     
     func apply(filter: CIFilter) {
+        let tmpFilter = currentFilter.ciFilter
+        let beginImage = CIImage(image: selectedImage!)
         
+        tmpFilter.setValue(beginImage, forKey: kCIInputImageKey)
+        guard let outputImage = tmpFilter.outputImage else { return }
+
+        if let cgImage = context.createCGImage(outputImage,
+                                               from: outputImage.extent) {
+            currentImage = UIImage(cgImage: cgImage)
+        }
     }
     
     func select(filter: Filter) {
@@ -47,10 +63,13 @@ class Model: BaseModel, ObservableObject {
 }
 
 class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
-    private let ciFilter: CIFilter
+    let ciFilter: CIFilter
     
     var id: String { name }
     var name: String {
+        "\(ciFilter.name)"
+    }
+    var displayName: String {
         "\(ciFilter.attributes["CIAttributeFilterDisplayName"]!)"
     }
     
@@ -133,7 +152,7 @@ struct FilterSettings: View {
     
     var body: some View {
         VStack {
-            Headline("\(filter.name)")
+            Headline("\(filter.displayName)")
             
             ScrollView {
                 VStack {
@@ -149,14 +168,20 @@ struct FilterSettings: View {
 
 
 struct ImageNavigation: View {
+    @ObservedObject
+    var model: Model
+    
     var body: some View {
         HStack(alignment: .center, spacing: 44) {
             Group{
                 Button("Load Image") {
-                    print("Load Image")
+                    withAnimation {
+                        model.isShowPicker.toggle()
+                    }
                 }
                 Button("Save Image") {
-                    print("Save Image")
+                    let imageSaver = ImageSaver()
+                    imageSaver.writeToPhotoAlbum(image: model.currentImage)
                 }
                 Button("Detect Face") {
                     print("Detect Face")
@@ -260,7 +285,7 @@ extension FilterList {
                     .aspectRatio(1, contentMode: .fill)
                     .clipped()
                 
-                Text(filter.name)
+                Text(filter.displayName)
                     .font(.system(size: 14, weight: .regular, design: .rounded))
                     .lineLimit(1)
                 
@@ -300,11 +325,16 @@ struct FilterEditor: View {
     var body: some View {
         VStack {
             ZStack {
-                Placeholder("Preview Image")
+//                Placeholder("Preview Image")
+                Image(uiImage: model.currentImage)
+                    .resizable()
+                    .scaledToFit()
+                    .cornerRadius(10)
 //                    .aspectRatio(1.0, contentMode: .fit)
-            }.maxFrame()
+            }
+            .maxFrame()
             
-            ImageNavigation()
+            ImageNavigation(model: model)
             
             HStack {
                 Group {
@@ -315,6 +345,8 @@ struct FilterEditor: View {
                         .frame(maxWidth: .infinity)
                 }.background(Placeholder(""))
             }.frame(height: 350)
+        }.sheet(isPresented: $model.isShowPicker) {
+            ImagePicker(image2: $model.selectedImage)
         }
     }
 }
@@ -356,6 +388,54 @@ struct Placeholder: View {
     }
 }
 
+struct ImagePicker: UIViewControllerRepresentable {
+
+    @Environment(\.presentationMode)
+    var presentationMode
+
+    @Binding var image2: UIImage?
+
+    class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+
+        @Binding var presentationMode: PresentationMode
+        @Binding var image2: UIImage?
+
+        init(presentationMode: Binding<PresentationMode>, image2: Binding<UIImage?>) {
+            _presentationMode = presentationMode
+            _image2 = image2
+        }
+
+        func imagePickerController(_ picker: UIImagePickerController,
+                                   didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            let uiImage = info[UIImagePickerController.InfoKey.originalImage] as! UIImage
+            image2 = uiImage
+            presentationMode.dismiss()
+
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            presentationMode.dismiss()
+        }
+
+    }
+
+    func makeCoordinator() -> Coordinator {
+        return Coordinator(presentationMode: presentationMode, image2: $image2)
+    }
+
+    func makeUIViewController(context: UIViewControllerRepresentableContext<ImagePicker>) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController,
+                                context: UIViewControllerRepresentableContext<ImagePicker>) {
+
+    }
+
+}
+
 
 fileprivate extension Color {
     init(level: Int) {
@@ -387,5 +467,15 @@ extension String {
             return String(self.dropFirst(0))
         }
         return self
+    }
+}
+
+class ImageSaver: NSObject {
+    func writeToPhotoAlbum(image: UIImage) {
+        UIImageWriteToSavedPhotosAlbum(image, self, #selector(saveCompleted), nil)
+    }
+
+    @objc func saveCompleted(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
+        print("Save finished!")
     }
 }
