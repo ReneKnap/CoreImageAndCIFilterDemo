@@ -7,33 +7,62 @@
 
 import SwiftUI
 
+extension FilterEditor {
+    class ViewModel: BaseModel, ObservableObject {
+        var model = Model()
+        @Published var currentFilter: Filter! = nil
+        @Published var filteredImage: UIImage? = nil
+        
+        @Published var isShowPicker: Bool = false
+        @Published var showImageSavedAlert = false
+        
+        override init() {
+            super.init()
+            
+            model.$currentFilter
+//                .assign(to: \.currentFilter, on: self)
+                .sink { [weak self] in
+                    self?.currentFilter = $0
+                }
+                .store(in: &subs)
+            
+            model.$filteredImage
+//                .assign(to: \.filteredImage, on: self)
+                .sink { [weak self] in
+                    self?.filteredImage = $0
+                }
+                .store(in: &subs)
+        }
+    }
+}
+
 struct FilterEditor: View {
-    @StateObject var model = Model()
+    @StateObject var vm = ViewModel()
     
     var body: some View {
         VStack {
             ZStack {
-                Image(uiImage: model.currentImage ?? UIImage(fromColor: UIColor(.gray)))
+                Image(uiImage: vm.filteredImage ?? UIImage(fromColor: .gray))
                     .resizable()
                     .scaledToFit()
-                    .cornerRadius(10)
+                    .cornerRadius(defaultCornerRasius)
             }
             .maxFrame()
             
-            ImageFileNavigation(model: model)
+            ImageFileNavigation()
             
             HStack {
                 Group {
-                    FilterList(model: model)
+                    FilterList(model: vm.model)
                         .frame(width: 250)
                     
-                    FilterSettings(filter: model.currentFilter)
+                    FilterSettings(filter: vm.currentFilter)
                         .frame(maxWidth: .infinity)
                 }.background(Placeholder(""))
             }.frame(height: 350)
-        }.sheet(isPresented: $model.isShowPicker) {
-            ImagePicker(image2: $model.selectedImage)
-        }
+        }.sheet(isPresented: $vm.isShowPicker) {
+            ImagePicker(image2: $vm.model.selectedImage)
+        }.environmentObject(vm)
     }
 }
 
@@ -50,7 +79,7 @@ struct FilterSettings: View {
                     ForEach(filter.sliders) { slider in
                         FilterParamerterSlider(slider: slider)
                     }
-                }.padding(10)
+                }.padding(defaultPadding)
             }
         }
         .maxFrame()
@@ -77,15 +106,15 @@ struct FilterParamerterSlider: View {
                     Text(slider.name.removeFirst(5).camelCaseToWords() + ": ")
                         + Text("\(slider.value, specifier: "%.2f")")
                 }
-            }.padding(.horizontal, 5)
-            .padding(10)
+            }.padding(.horizontal, defaultPadding/2)
+            .padding(defaultPadding)
             
             Slider(value: $slider.value, in: slider.min...slider.max)
-                .padding(10)
+                .padding(defaultPadding)
 
         }
         .monospacedDigit()
         .background(Color(level: 2))
-        .cornerRadius(6)
+        .cornerRadius(defaultCornerRasius)
     }
 }

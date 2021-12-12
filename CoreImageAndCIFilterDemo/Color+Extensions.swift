@@ -4,7 +4,7 @@
 //
 //  Created by Creatcher on 12.12.21.
 //
-import Foundation
+
 import SwiftUI
 
 extension Color {

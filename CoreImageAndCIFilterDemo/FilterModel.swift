@@ -13,47 +13,56 @@ class BaseModel {
 }
 
 class Model: BaseModel, ObservableObject {
+//    @Published var isShowPicker: Bool = false
+//    @Published var showImageSavedAlert = false
     @Published var currentFilter: Filter
-    @Published var isShowPicker: Bool = false
-    var filters = [Filter]()
+    @Published var filteredImage: UIImage?
+    let filters: [Filter]
     var selectedImage: UIImage?
-    @Published var currentImage: UIImage?
-    var context: CIContext!
-    @Published var showImageSavedAlert = false
+    
+    //Initialize the context to be reused
+    private let context = CIContext()
     
     override init() {
+        //MARK: - Get built-in Filters
         filters = CIFilter
+        //String Array of biuld-in filters
             .filterNames(inCategory: kCICategoryBuiltIn)
             .compactMap(CIFilter.init)
             .map(Filter.init)
         
         currentFilter = filters.first!
         
-        context = CIContext()
-        
         super.init()
         
+        $currentFilter
+            .map(\.ciFilter)
+            .sink(receiveValue: apply(filter: ))
+            .store(in: &subs)
+        
         for filter in filters {
-            filter.didChange
-                .sink { filter in
-                    self.apply(filter: filter)
-                }.store(in: &subs)
+            filter.didChange.sink { filter in
+                self.apply(filter: filter)
+            }.store(in: &subs)
         }
     }
     
+    //MARK: - Appy Filter
     func apply(filter: CIFilter) {
-        guard let image = selectedImage else {
-            return
-        }
-        let beginImage = CIImage(image: image)
-        let tmpFilter = currentFilter.ciFilter
+        // Check if an image has been loaded
+        guard let image = selectedImage else { return }
         
-        tmpFilter.setValue(beginImage, forKey: kCIInputImageKey)
-        guard let outputImage = tmpFilter.outputImage else { return }
-
+        // Create a CIImage to apply the CIFilter
+        let beginImage = CIImage(image: image)
+        
+        // Pass the image to the filter
+        currentFilter.ciFilter.setValue(beginImage, forKey: kCIInputImageKey)
+        
+        // Calculate in the context the transformed image with the filter settings
+        guard let outputImage = currentFilter.ciFilter.outputImage else { return }
         if let cgImage = context.createCGImage(outputImage,
                                                from: outputImage.extent) {
-            currentImage = UIImage(cgImage: cgImage)
+            filteredImage = UIImage(cgImage: cgImage)
         }
     }
     
@@ -64,6 +73,7 @@ class Model: BaseModel, ObservableObject {
 
 class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
     let ciFilter: CIFilter
+    let didChange = PassthroughSubject<CIFilter, Never>()
     
     var id: String { name }
     var name: String {
@@ -81,7 +91,8 @@ class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
         
         super.init()
         
-        
+        //MARK: - Slider for
+        // Set a slider for each numeric filter parameter
         for attribute in ciFilter.attributes{
             if attribute.key.hasPrefix("input") &&
                 ((attribute.value as! Dictionary<String,Any>)["CIAttributeClass"] as! String) == "NSNumber"
@@ -99,14 +110,12 @@ class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
         makeSub()
     }
     
-    let didChange = PassthroughSubject<CIFilter, Never>()
-    
     private func makeSub() {
         subs.removeAll()
         
         for slider in sliders {
             slider.$value.sink { _ in
-                self.rander()
+                self.adjustFilter()
             }.store(in: &subs)
         }
     }
@@ -115,8 +124,7 @@ class Filter: BaseModel, ObservableObject, Identifiable, Equatable {
         lhs.name == rhs.name
     }
     
-    
-    func rander() {
+    func adjustFilter() {
         ciFilter.setValuesForKeys(sliders.reduce(
             into: [String: CGFloat](), {
             $0[$1.name] = $1.value

@@ -15,18 +15,20 @@ struct FilterList: View {
             Headline("Filters")
             
             ScrollView {
-                LazyVStack {
-                    ForEach(model.filters) { filter in
-                        Button {
-                            model.select(filter: filter)
-                        } label: {
-                            Elememt(
-                                filter,
-                                isSelected: filter == model.currentFilter
-                            )
+                LazyVStack(pinnedViews: [.sectionHeaders]) {
+                    Section(header: Headline("ToDo").maxFrame().background(Color(level: 2))){
+                        ForEach(model.filters) { filter in
+                            Button {
+                                model.select(filter: filter)
+                            } label: {
+                                Elememt(
+                                    filter,
+                                    isSelected: filter == model.currentFilter
+                                )
+                            }
                         }
                     }
-                }.padding(10)
+                }.padding(defaultPadding)
             }
         }
     }
@@ -51,10 +53,10 @@ extension FilterList {
                 Spacer()
             }
             .foregroundColor(isSelected ? .black : .white)
-            .padding(.horizontal, 10)
-            .frame(height: 44)
+            .padding(.horizontal, defaultPadding)
+            .frame(height: minimumTappableLenght)
             .background(isSelected ? Color.accentColor : Color(level: 3))
-            .cornerRadius(6)
+            .cornerRadius(defaultCornerRasius)
             
         }
         

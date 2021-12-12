@@ -19,6 +19,7 @@
 		F574AB0B2765A12E00D88ECC /* FilterSettingsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB0A2765A12E00D88ECC /* FilterSettingsViews.swift */; };
 		F574AB0D2765A21A00D88ECC /* HelperViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB0C2765A21A00D88ECC /* HelperViews.swift */; };
 		F574AB102765A2D600D88ECC /* FilterModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB0F2765A2D600D88ECC /* FilterModel.swift */; };
+		F574AB122765DC8700D88ECC /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB112765DC8700D88ECC /* UIImage+Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +36,7 @@
 		F574AB0A2765A12E00D88ECC /* FilterSettingsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterSettingsViews.swift; sourceTree = "<group>"; };
 		F574AB0C2765A21A00D88ECC /* HelperViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelperViews.swift; sourceTree = "<group>"; };
 		F574AB0F2765A2D600D88ECC /* FilterModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterModel.swift; sourceTree = "<group>"; };
+		F574AB112765DC8700D88ECC /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +93,7 @@
 				F574AB002765981200D88ECC /* View+Extensions.swift */,
 				F574AAFE276597DB00D88ECC /* Color+Extensions.swift */,
 				F574AAFC2765979400D88ECC /* String+Extensions.swift */,
+				F574AB112765DC8700D88ECC /* UIImage+Extensions.swift */,
 			);
 			name = Extensions;
 			sourceTree = "<group>";
@@ -194,6 +197,7 @@
 				F574AB012765981200D88ECC /* View+Extensions.swift in Sources */,
 				F574AAFF276597DB00D88ECC /* Color+Extensions.swift in Sources */,
 				F574AB0B2765A12E00D88ECC /* FilterSettingsViews.swift in Sources */,
+				F574AB122765DC8700D88ECC /* UIImage+Extensions.swift in Sources */,
 				F574AB0727659FE200D88ECC /* ImageFileNavigationViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

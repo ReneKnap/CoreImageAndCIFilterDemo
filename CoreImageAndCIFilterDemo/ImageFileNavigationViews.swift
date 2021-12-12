@@ -10,25 +10,25 @@ import Combine
 
 
 struct ImageFileNavigation: View {
-    @ObservedObject
-    var model: Model
+    @EnvironmentObject
+    var vm: FilterEditor.ViewModel
     
     var body: some View {
-        HStack(alignment: .center, spacing: 44) {
+        HStack(alignment: .center, spacing: 50) {
             Group{
                 Button("Load Image") {
                     withAnimation {
-                        model.isShowPicker.toggle()
+                        vm.isShowPicker.toggle()
                     }
                 }
                 Button("Save Image") {
                     let imageSaver = ImageSaver()
-                    guard let targetImage = model.currentImage else {
+                    guard let targetImage = vm.filteredImage else {
                         return
                     }
                     imageSaver.writeToPhotoAlbum(image: targetImage)
-                    model.showImageSavedAlert = true
-                }.alert(isPresented: $model.showImageSavedAlert) {
+                    vm.showImageSavedAlert = true
+                }.alert(isPresented: $vm.showImageSavedAlert) {
                     Alert(
                         title: Text("Saved"),
                         message: Text("Image is saved to your Album")
@@ -38,9 +38,9 @@ struct ImageFileNavigation: View {
                     print("Detect Face")
                 }
             }
-            .frame(width: 120, height: 44, alignment: .center)
+            .frame(width: 120, height: minimumTappableLenght, alignment: .center)
             .background(Color(level: 5))
-            .cornerRadius(12)
+            .cornerRadius(defaultCornerRasius)
             .foregroundColor(.white)
         }
     }
