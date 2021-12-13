@@ -126,19 +126,19 @@ class Model: ModelBase, ObservableObject {
                 
                 var eyes = [CGRect]()
                 eyes += feature.hasLeftEyePosition
-                    ? [CGRect(origin: feature.leftEyePosition.scale(factor: scaleFactor),
+                    ? [CGRect(origin: feature.leftEyePosition.swapY(image.size.height).scale(factor: scaleFactor),
                             size: feature.bounds.size.scale(factor: 0.125))]
                     : []
                 
                 eyes += feature.hasRightEyePosition
-                    ? [CGRect(origin: feature.rightEyePosition.scale(factor: scaleFactor),
+                    ? [CGRect(origin: feature.rightEyePosition.swapY(image.size.height).scale(factor: scaleFactor),
                        size: feature.bounds.size.scale(factor: 0.125))]
                     : []
                 
                 
                 outputFeatures.append(
                     FaceFeature(
-                        face: feature.bounds,
+                        face: feature.bounds.swapY(image.size.height).scale(factor: scaleFactor),
                         eyes: eyes
                     )
                 )
@@ -149,6 +149,7 @@ class Model: ModelBase, ObservableObject {
 }
 
 fileprivate let filterLibraryPreset = [
+    "CISepiaTone",
     "CIBoxBlur",
     "CIDiscBlur",
     "CIGaussianBlur",
@@ -174,5 +175,25 @@ extension CGSize {
 extension CGPoint {
     func scale(factor: CGFloat) -> CGPoint {
         CGPoint(x: self.x * factor, y: self.y * factor)
+    }
+}
+
+extension CGPoint {
+    func swapY(_ originImageHeight: CGFloat) -> CGPoint {
+        CGPoint(x: self.x, y: originImageHeight - self.y)
+    }
+}
+
+extension CGRect {
+    func scale(factor: CGFloat) -> CGRect {
+        CGRect(x: self.origin.x * factor, y: self.origin.y * factor,
+               width: self.size.width * factor, height: self.size.height * factor)
+    }
+}
+
+extension CGRect {
+    func swapY(_ originImageHeight: CGFloat) -> CGRect {
+        CGRect(x: self.origin.x, y: originImageHeight - self.origin.y,
+               width: self.size.width, height: self.size.height)
     }
 }

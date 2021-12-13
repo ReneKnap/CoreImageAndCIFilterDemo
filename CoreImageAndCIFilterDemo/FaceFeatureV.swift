@@ -31,10 +31,10 @@ struct FaceV: View {
     
     var body: some View {
         RoundedRectangle(cornerRadius: 6)
-            .stroke(Color.blue)
+            .stroke(Color.blue, lineWidth: 5)
             .frame(width: bounds.width, height: bounds.height)
-//            .position(x: bounds.minX + (bounds.width / 2), y: bounds.minY + (bounds.height / 2))
-            .position(x: bounds.minX, y: bounds.minY)
+            .position(x: bounds.minX + (bounds.width / 2), y: bounds.minY + (-bounds.height / 2))
+//            .position(x: bounds.minX, y: bounds.minY)
     }
 }
 
@@ -43,7 +43,7 @@ struct EyeV: View {
     
     var body: some View {
         Circle()
-            .stroke(Color.green)
+            .stroke(Color.green, lineWidth: 5)
             .frame(width: bounds.width, height: bounds.height)
 //            .position(x: bounds.minX + (bounds.width/2), y: bounds.minY + (bounds.height/2))
             .position(x: bounds.minX, y: bounds.minY)

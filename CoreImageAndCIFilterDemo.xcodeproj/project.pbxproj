@@ -118,7 +118,6 @@
 				F574AB0A2765A12E00D88ECC /* FilterSettingsViews.swift */,
 				F574AB0C2765A21A00D88ECC /* HelperViews.swift */,
 				F574AAD5276375EA00D88ECC /* ContentView.swift */,
-				F574AB192766C2ED00D88ECC /* FaceMarker.swift */,
 				F574AB1B2766C31600D88ECC /* FaceFeatureV.swift */,
 				F574AB1D2766C34900D88ECC /* IconButton.swift */,
 				F574AB1F2766C37000D88ECC /* IconToggle.swift */,
@@ -130,6 +129,7 @@
 		F574AB0E2765A28C00D88ECC /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				F574AB192766C2ED00D88ECC /* FaceMarker.swift */,
 				F574AB0F2765A2D600D88ECC /* FilterModel.swift */,
 				F574AB1527663BC400D88ECC /* Filter.swift */,
 			);
