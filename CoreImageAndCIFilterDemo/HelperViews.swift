@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-let defaultCornerRasius = CGFloat(12)
+let defaultCornerRadius = CGFloat(12)
 let defaultPadding = CGFloat(10)
 let minimumTappableLenght = CGFloat(44)
 
@@ -17,7 +17,7 @@ struct Headline: View {
     var body: some View {
         HStack {
             Text(name)
-                .font(.system(size: 24, weight: .light, design: .rounded))
+                .font(.system(size: 24, weight: .regular, design: .rounded))
                 .padding(.top, defaultPadding)
         }
     }
@@ -46,7 +46,7 @@ struct Placeholder: View {
     
     var body: some View {
         Color(level: 2)
-            .cornerRadius(defaultCornerRasius)
+            .cornerRadius(defaultCornerRadius)
             .overlay(Text(name))
     }
     

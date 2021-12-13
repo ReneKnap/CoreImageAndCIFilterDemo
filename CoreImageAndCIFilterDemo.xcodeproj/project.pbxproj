@@ -21,6 +21,11 @@
 		F574AB102765A2D600D88ECC /* FilterModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB0F2765A2D600D88ECC /* FilterModel.swift */; };
 		F574AB122765DC8700D88ECC /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB112765DC8700D88ECC /* UIImage+Extensions.swift */; };
 		F574AB1627663BC400D88ECC /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB1527663BC400D88ECC /* Filter.swift */; };
+		F574AB1A2766C2ED00D88ECC /* FaceMarker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB192766C2ED00D88ECC /* FaceMarker.swift */; };
+		F574AB1C2766C31600D88ECC /* FaceFeatureV.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB1B2766C31600D88ECC /* FaceFeatureV.swift */; };
+		F574AB1E2766C34900D88ECC /* IconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB1D2766C34900D88ECC /* IconButton.swift */; };
+		F574AB202766C37000D88ECC /* IconToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB1F2766C37000D88ECC /* IconToggle.swift */; };
+		F574AB222766C3A900D88ECC /* FilterChainV.swift in Sources */ = {isa = PBXBuildFile; fileRef = F574AB212766C3A900D88ECC /* FilterChainV.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +44,11 @@
 		F574AB0F2765A2D600D88ECC /* FilterModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterModel.swift; sourceTree = "<group>"; };
 		F574AB112765DC8700D88ECC /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
 		F574AB1527663BC400D88ECC /* Filter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Filter.swift; sourceTree = "<group>"; };
+		F574AB192766C2ED00D88ECC /* FaceMarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceMarker.swift; sourceTree = "<group>"; };
+		F574AB1B2766C31600D88ECC /* FaceFeatureV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceFeatureV.swift; sourceTree = "<group>"; };
+		F574AB1D2766C34900D88ECC /* IconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButton.swift; sourceTree = "<group>"; };
+		F574AB1F2766C37000D88ECC /* IconToggle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconToggle.swift; sourceTree = "<group>"; };
+		F574AB212766C3A900D88ECC /* FilterChainV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterChainV.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +118,11 @@
 				F574AB0A2765A12E00D88ECC /* FilterSettingsViews.swift */,
 				F574AB0C2765A21A00D88ECC /* HelperViews.swift */,
 				F574AAD5276375EA00D88ECC /* ContentView.swift */,
+				F574AB192766C2ED00D88ECC /* FaceMarker.swift */,
+				F574AB1B2766C31600D88ECC /* FaceFeatureV.swift */,
+				F574AB1D2766C34900D88ECC /* IconButton.swift */,
+				F574AB1F2766C37000D88ECC /* IconToggle.swift */,
+				F574AB212766C3A900D88ECC /* FilterChainV.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -191,15 +206,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F574AB1A2766C2ED00D88ECC /* FaceMarker.swift in Sources */,
 				F574AB0D2765A21A00D88ECC /* HelperViews.swift in Sources */,
 				F574AB1627663BC400D88ECC /* Filter.swift in Sources */,
+				F574AB1E2766C34900D88ECC /* IconButton.swift in Sources */,
 				F574AAD6276375EA00D88ECC /* ContentView.swift in Sources */,
 				F574AAFD2765979400D88ECC /* String+Extensions.swift in Sources */,
+				F574AB202766C37000D88ECC /* IconToggle.swift in Sources */,
 				F574AAD4276375EA00D88ECC /* CoreImageAndCIFilterDemoApp.swift in Sources */,
+				F574AB1C2766C31600D88ECC /* FaceFeatureV.swift in Sources */,
 				F574AB092765A0CF00D88ECC /* FilterListViews.swift in Sources */,
 				F574AB102765A2D600D88ECC /* FilterModel.swift in Sources */,
 				F574AB012765981200D88ECC /* View+Extensions.swift in Sources */,
 				F574AAFF276597DB00D88ECC /* Color+Extensions.swift in Sources */,
+				F574AB222766C3A900D88ECC /* FilterChainV.swift in Sources */,
 				F574AB0B2765A12E00D88ECC /* FilterSettingsViews.swift in Sources */,
 				F574AB122765DC8700D88ECC /* UIImage+Extensions.swift in Sources */,
 				F574AB0727659FE200D88ECC /* ImageFileNavigationViews.swift in Sources */,

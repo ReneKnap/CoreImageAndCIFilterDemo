@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct FilterList: View {
-    @ObservedObject var model: Model
+    @EnvironmentObject
+    var vm: FilterEditor.ViewModel
     
     var body: some View {
         VStack(spacing: 5) {
@@ -16,24 +17,26 @@ struct FilterList: View {
             
             ScrollView {
                 LazyVStack(pinnedViews: [.sectionHeaders]) {
-                    Section(header: Headline("ToDo").maxFrame().background(Color(level: 2))){
-                        ForEach(model.filters, id: \.self) { filter in
+//                    Section(header: Headline("ToDo").maxFrame().background(Color(level: 2))){
+                    ForEach(vm.filterLibrary, id: \.self) { filter in
                             Elememt(
                                 filterName: filter,
-                                isSelected: filter == model.currentFilter.name
+                                isSelected: vm.isChainingOn
+                                    ? false
+                                    : filter == vm.currentFilter.name
                             ) {
-                                model.selectFilter(name: filter)
+                                vm.onFilterSelect(filter: filter)
                             }
                         }
-                    }
-                    Section(header: Headline("Face Detection").maxFrame().background(Color(level: 2))){
-                        Elememt(
-                            filterName: "Face Detection",
-                            isSelected: "Face Detection" == model.currentFilter.name
-                        ) {
-                            model.selectFilter(name: "Face Detection")
-                        }
-                    }
+//                    }
+//                    Section(header: Headline("Face Detection").maxFrame().background(Color(level: 2))){
+//                        Elememt(
+//                            filterName: "Face Detection",
+//                            isSelected: "Face Detection" == model.currentFilter.name
+//                        ) {
+//                            model.selectFilter(name: "Face Detection")
+//                        }
+//                    }
                 }.padding(defaultPadding)
             }
         }
@@ -67,7 +70,7 @@ extension FilterList {
                 .padding(.horizontal, defaultPadding)
                 .frame(height: minimumTappableLenght)
                 .background(isSelected ? Color.accentColor : Color(level: 3))
-                .cornerRadius(defaultCornerRasius)
+                .cornerRadius(defaultCornerRadius)
             }
         }
         

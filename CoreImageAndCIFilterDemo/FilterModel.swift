@@ -14,34 +14,19 @@ class ModelBase {
 
 class Model: ModelBase, ObservableObject {
     private var filterSubs = Set<AnyCancellable>()
+    let filterLibrary = filterLibraryPreset
     
-    @Published var currentFilter: Filter! = nil
+    let chain = FilterChain()
     @Published var filteredImage: UIImage?
-    let filters: [String]
     @Published var selectedImage: UIImage?
+    @Published var isChainActive = false
+    
+    
     
     override init() {
-        //MARK: - Get built-in Filters
-//        filters = CIFilter
-//        //String Array of biuld-in filters
-//            .filterNames(inCategory: kCICategoryBuiltIn)
-//
-        filters = [
-            "CIBoxBlur",
-            "CIDiscBlur",
-            "CIGaussianBlur",
-            "CIMaskedVariableBlur",
-            "CIBloom",
-            "CIComicEffect",
-            "CIEdges",
-            "CIEdgeWork",
-            "CIPixellate",
-            "CIHexagonalPixellate"
-        ]
-        
         super.init()
         
-        selectFilter(name: filters.first!)
+        selectFilter(name: filterLibrary.first!)
         
 //        $selectedImage
 //            .compactMap { $0 }
@@ -65,40 +50,129 @@ class Model: ModelBase, ObservableObject {
 //                .sink(receiveValue: doApply.send)
 //                .store(in: &subs)
 //        }
-        $currentFilter
-            .compactMap { $0 }
+        chain.didChange
             .combineLatest(
                 $selectedImage
                     .compactMap { $0 }
             ).map { (filter, image) in
+                
+                
                 filter.set(image: image)
-                return filter
             }
-            .sink(receiveValue: onSetupChange(filter:))
+            .sink(receiveValue: apply)
             .store(in: &subs)
-    }
-    
-    
-    private func onSetupChange(filter: Filter) {
-        filterSubs.removeAll()
-        filter.didChange
-            .sink(receiveValue: apply(filter:))
-            .store(in: &filterSubs)
         
-        apply(filter: filter)
+        chain.didChange.send(chain)
     }
+    
+    
+//    private func onSetupChange(filter: Filter) {
+//        filterSubs.removeAll()
+//        filter.didChange
+//            .sink(receiveValue: apply(filter:))
+//            .store(in: &filterSubs)
+//
+//        apply(filter: filter)
+//    }
     
     //MARK: - Appy Filte
-    private func apply(filter: Filter) {
-        filteredImage = filter.apply()
+    private func apply() {
+        
+        filteredImage = chain.apply()
     }
     
     func selectFilter(name: String) {
-        if let ciFilter = CIFilter(name: name) {
-            currentFilter = FilterBuildIn(ciFilter)
+        guard
+            let ciFilter = CIFilter(name: name)
+        else { return }
+        
+        let filter = FilterBuildIn(ciFilter)
+        
+        if isChainActive {
+            chain.add(filter: filter)
         } else {
-            currentFilter = FilterFaceDetection()
+            chain.reset()
+            chain.add(filter: filter)
+            //TODO convert to one
         }
+
+    }
+    
+    func mockFaceFeatures(uiSize: CGSize) -> [FaceFeature]? {
+        return [
+            FaceFeature(
+                face: CGRect(x: 0, y: 0, width: 200, height: 400),
+                eyes: [
+                    CGRect(x: 0, y: 0, width: 20, height: 20),
+                    CGRect(x: 200, y: 150, width: 10, height: 10)
+                ]
+            )
+        ]
+    }
+    
+    func faceFeatures(uiSize: CGSize) -> [FaceFeature] {
+        guard let image = selectedImage else { return [] }
+        
+        let context = CIContext()
+        var outputFeatures = [FaceFeature]()
+        let ciImage = CIImage(image: image)!
+        let scaleFactor = 1 / image.size.width * uiSize.width
+        
+        let param: [String:Any] = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
+        if let faceDetector: CIDetector = CIDetector(ofType: CIDetectorTypeFace, context: context, options: param) {
+            let detectResult = faceDetector.features(in: ciImage) as! [CIFaceFeature]
+            
+            for feature in detectResult {
+                
+                var eyes = [CGRect]()
+                eyes += feature.hasLeftEyePosition
+                    ? [CGRect(origin: feature.leftEyePosition.scale(factor: scaleFactor),
+                            size: feature.bounds.size.scale(factor: 0.125))]
+                    : []
+                
+                eyes += feature.hasRightEyePosition
+                    ? [CGRect(origin: feature.rightEyePosition.scale(factor: scaleFactor),
+                       size: feature.bounds.size.scale(factor: 0.125))]
+                    : []
+                
+                
+                outputFeatures.append(
+                    FaceFeature(
+                        face: feature.bounds,
+                        eyes: eyes
+                    )
+                )
+            }
+        }
+        return outputFeatures
     }
 }
 
+fileprivate let filterLibraryPreset = [
+    "CIBoxBlur",
+    "CIDiscBlur",
+    "CIGaussianBlur",
+    "CIMaskedVariableBlur",
+    "CIBloom",
+    "CIComicEffect",
+    "CIEdges",
+    "CIEdgeWork",
+    "CIPixellate",
+    "CIHexagonalPixellate"
+]
+
+extension CGSize {
+    func scale(factor: CGFloat) -> CGSize {
+        CGSize(width: self.width * factor, height: self.height * factor)
+    }
+    
+    var ratio: CGFloat {
+        width / height
+    }
+}
+
+extension CGPoint {
+    func scale(factor: CGFloat) -> CGPoint {
+        CGPoint(x: self.x * factor, y: self.y * factor)
+    }
+}

@@ -10,7 +10,8 @@ import CoreImage
 import Combine
 import UIKit
 
-class Filter: ModelBase {
+class Filter: ModelBase, Identifiable {
+    var id: String = UUID().uuidString
     var name: String { "Base" }
     
     var sliders = [Slider]()
@@ -65,13 +66,13 @@ extension Filter {
     }
 }
 
-extension Filter: Identifiable {
-    var id: String { name }
-}
+//extension Filter: Identifiable {
+//    var id: String = UUID().uuidString
+//}
 
 extension Filter: Equatable {
     static func == (lhs: Filter, rhs: Filter) -> Bool {
-        lhs.name == rhs.name
+        lhs.id == rhs.id
     }
 }
 
@@ -141,19 +142,79 @@ final class FilterBuildIn: Filter {
 }
 
 
-final class FilterFaceDetection: Filter {
-    override var name: String { "Face Detection" }
+//final class FilterFaceDetection: Filter {
+//    override var name: String { "Face Detection" }
+//
+//    override init() {
+//        super.init()
+//    }
+//
+//    override func apply() -> UIImage? {
+//        UIImage(fromColor: .blue)
+//    }
+//
+//    override func set(image: UIImage) {
+//
+//    }
+//}
+
+final class FilterChain: Filter, ObservableObject {
+    private var filterSubs = Set<AnyCancellable>()
+    override var name: String { "Chain" }
+    let context = CIContext()
+    @Published var activeFilters: [FilterBuildIn] = []
+    var originalImage: CIImage? = nil
     
     override init() {
         super.init()
     }
     
+    private func updateSubs() {
+        filterSubs.removeAll()
+        
+        for filter in activeFilters {
+            filter.didChange
+                .sink { [weak self] _ in
+                    guard let self = self else { return }
+                    self.didChange.send(self)
+                }.store(in: &filterSubs)
+        }
+        didChange.send(self)
+    }
+    
+    func add(filter: FilterBuildIn) {
+        activeFilters += [filter]
+        
+        updateSubs()
+    }
+    
     override func apply() -> UIImage? {
-        UIImage(fromColor: .blue)
+        var image = originalImage
+        
+        for filter in activeFilters {
+            filter.ciFilter.setValue(image, forKey: kCIInputImageKey)
+            image = filter.ciFilter.outputImage
+        }
+        
+        
+        if
+            let outputImage = image,
+            let cgImage = context.createCGImage(outputImage,
+                                               from: outputImage.extent)
+        {
+            return UIImage(cgImage: cgImage)
+        }
+        
+        return nil
     }
     
     override func set(image: UIImage) {
-        
+        originalImage = CIImage(image: image)
+    }
+    
+    func reset() {
+        activeFilters.removeAll()
+        updateSubs()
     }
 }
 
