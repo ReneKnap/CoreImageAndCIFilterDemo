@@ -17,7 +17,6 @@ struct FilterList: View {
             
             ScrollView {
                 LazyVStack(pinnedViews: [.sectionHeaders]) {
-//                    Section(header: Headline("ToDo").maxFrame().background(Color(level: 2))){
                     ForEach(vm.filterLibrary, id: \.self) { filter in
                             Elememt(
                                 filterName: filter,
@@ -28,15 +27,6 @@ struct FilterList: View {
                                 vm.onFilterSelect(filter: filter)
                             }
                         }
-//                    }
-//                    Section(header: Headline("Face Detection").maxFrame().background(Color(level: 2))){
-//                        Elememt(
-//                            filterName: "Face Detection",
-//                            isSelected: "Face Detection" == model.currentFilter.name
-//                        ) {
-//                            model.selectFilter(name: "Face Detection")
-//                        }
-//                    }
                 }.padding(defaultPadding)
             }
         }

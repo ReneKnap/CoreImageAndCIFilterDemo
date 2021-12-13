@@ -28,7 +28,6 @@ struct FilterChainV: View {
             .padding(.trailing, 44)
         }
         .maxFrame()
-//        .frame(width: geo.size.width, height: geo.size.height)
         .background(Color(level: 1))
         .overlay(removeButton)
         .cornerRadius(7)

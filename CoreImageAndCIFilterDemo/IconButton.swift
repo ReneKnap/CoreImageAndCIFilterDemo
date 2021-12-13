@@ -22,7 +22,6 @@ struct IconButton: View {
                 .font(.system(size: 24, weight: .regular, design: .rounded))
                 .foregroundColor(.accentColor)
                 .frame(width: 44, height: 44)
-//                .background(backgroundColor)
                 .cornerRadius(defaultCornerRadius)
                 .contentShape(Rectangle())
         }

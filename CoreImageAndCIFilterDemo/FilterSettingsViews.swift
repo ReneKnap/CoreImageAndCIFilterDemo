@@ -20,12 +20,11 @@ extension FilterEditor {
         
         @Published var isShowPicker: Bool = false
         @Published var showImageSavedAlert = false
-        @Published var isFaceDetectionOn = true
+        @Published var isFaceDetectionOn = false
         @Published var isChainingOn = false
         
         func faceFeatures(uiSize: CGSize) -> [FaceFeature]? {
             model.faceFeatures(uiSize: uiSize)
-//            model.mockFaceFeatures(uiSize: uiSize)
         }
         
         override init() {
@@ -56,14 +55,6 @@ extension FilterEditor {
             imageSaver.writeToPhotoAlbum(image: targetImage)
             showImageSavedAlert = true
         }
-        
-//        func addToChain(filter: String) {
-//            if let ciFilter = CIFilter(name: filter) {
-//                let filter = FilterBuildIn(ciFilter)
-//                chain.add(filter: filter)
-//                currentFilter = filter
-//            }
-//        }
         
         func onFilterSelect(filter: String) {
             model.selectFilter(name: filter)
@@ -145,14 +136,6 @@ struct FilterSettings: View {
                         Headline("\(filter.name)")
                     }
                 }
-                
-//                HStack {
-//                    Spacer()
-//
-//                    IconButton(systemName: "link.badge.plus", backgroundColor: .clear) {
-//                        vm.currentChain?.addFilter(name: filter.name)
-//                    }.padding(.horizontal, 10)
-//                }
             }.frame(maxWidth: .infinity).frame(height: 54)
             
             ScrollView {

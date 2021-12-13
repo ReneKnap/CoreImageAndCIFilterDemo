@@ -20,8 +20,6 @@ struct FaceFeatureV: View {
                 }
             }
         }
-//        .background(Color.red.opacity(0.3))
-//        .cornerRadius(20)
     }
 }
 
@@ -34,7 +32,6 @@ struct FaceV: View {
             .stroke(Color.blue, lineWidth: 5)
             .frame(width: bounds.width, height: bounds.height)
             .position(x: bounds.minX + (bounds.width / 2), y: bounds.minY + (-bounds.height / 2))
-//            .position(x: bounds.minX, y: bounds.minY)
     }
 }
 
@@ -45,7 +42,6 @@ struct EyeV: View {
         Circle()
             .stroke(Color.green, lineWidth: 5)
             .frame(width: bounds.width, height: bounds.height)
-//            .position(x: bounds.minX + (bounds.width/2), y: bounds.minY + (bounds.height/2))
             .position(x: bounds.minX, y: bounds.minY)
     }
 }
